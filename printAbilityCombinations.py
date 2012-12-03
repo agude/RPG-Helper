@@ -24,7 +24,7 @@ from optparse import OptionParser # Command line parsing
 usage = "usage: %prog [Options]"
 version = "%prog Version 1.0.0\n\nCopyright (C) 2012 Alexander Gude - alex.public.account+pathfinderhelper@gmail.com\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Alexander Gude."
 parser = OptionParser(usage=usage,version=version)
-parser.add_option("-p", "--points", action="store", type="int", dest="total points", default=15, help="use this many points as the total budget [defualt 15]")
+parser.add_option("-p", "--points", action="store", type="int", dest="pointsTotal", default=15, help="use this many points as the total budget [defualt 15]")
 parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="print status messages to stdout [default false]")
 parser.add_option("-q", "--quite", action="store_false", dest="verbose", default=False, help="do not print status messages to stdout")
 
@@ -46,5 +46,25 @@ costs = {
         18 : 17,
         }
 
-for i in xrange(7,19)
+found = {}
 
+for i in xrange(7,19):
+    for j in xrange(7,19):
+        for k in xrange(7,19):
+            for l in xrange(7,19):
+                for m in xrange(7,19):
+                    for n in xrange(7,19):
+                        abilities = [i,j,k,l,m,n]
+                        costCurrent = 0
+                        for z in abilities:
+                            costCurrent += costs[z]
+                        if costCurrent == options.pointsTotal:
+                            abilities.sort()
+                            abilities.reverse()
+                            found[tuple(abilities)] = costCurrent
+
+keys = found.keys()
+keys.sort()
+
+for statline in keys:
+    print statline
