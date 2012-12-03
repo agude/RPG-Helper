@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #  Copyright (C) 2012  Alexander Gude - alex.public.account+pathfinderhelper@gmail.com
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -48,12 +48,12 @@ costs = {
 
 found = {}
 
-for i in xrange(7,19):
-    for j in xrange(7,19):
-        for k in xrange(7,19):
-            for l in xrange(7,19):
-                for m in xrange(7,19):
-                    for n in xrange(7,19):
+for i in range(7,19):
+    for j in range(7,19):
+        for k in range(7,19):
+            for l in range(7,19):
+                for m in range(7,19):
+                    for n in range(7,19):
                         abilities = [i,j,k,l,m,n]
                         costCurrent = 0
                         for z in abilities:
@@ -63,8 +63,8 @@ for i in xrange(7,19):
                             abilities.reverse()
                             found[tuple(abilities)] = costCurrent
 
-keys = found.keys()
+keys = list(found.keys())
 keys.sort()
 
 for statline in keys:
-    print statline
+    print(statline)
