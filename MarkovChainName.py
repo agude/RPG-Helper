@@ -50,6 +50,7 @@ class NameGenerator:
         self.mc = MarkovChain()
         self.__loadFile()
         self.__parseData()
+        print(self.mc)
 
     def __loadFile(self):
         """ Load names from input file into a set """
@@ -67,10 +68,19 @@ class NameGenerator:
             while len(word) >= self.chainLength:
                 prefix = word[0:self.chainLength].lower()
                 word = word[self.chainLength:]
-                suffix = word[0:self.chainLength].lower()
-                self.mc.add(prefix,suffix)
-                if len(suffix) < self.chainLength:
-                    suffix += '\n'
+                # Check to see if we're at the end of our word
+                if len(word) == self.chainLength:
+                    suffix = word[0:self.chainLength].lower()
+                    self.mc.add(prefix,suffix)
+                    self.mc.add(suffix,'\n')
+                    break
+                elif len(word) < self.chainLength:
+                    suffix = word[0:self.chainLength].lower() + '\n'
+                    self.mc.add(prefix,suffix)
+                    break
+                else:
+                    suffix = word[0:self.chainLength].lower()
+                    self.mc.add(prefix,suffix)
 
     def makeNames(self,nnames):
         """ Generate n names """
@@ -81,13 +91,13 @@ class NameGenerator:
                 try:
                     suffix = self.mc[prefix]
                 except KeyError:
-                    print(name.title())
+                    print(name.strip().title())
                     break
                 else:
                     name += suffix
                     prefix = suffix
-                if len(name) >= self.maxLength or prefix == '':
-                    print(name.title())
+                if len(name) >= self.maxLength or prefix == '' or prefix == '\n':
+                    print(name.strip().title())
                     break
 
 ##### START OF CODE
