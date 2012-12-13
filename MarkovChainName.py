@@ -31,14 +31,30 @@ class MarkovChain:
         else:
             self.d[prefix] = [suffix]
 
+class NameGenerator:
+    """ Use a Markov Chain and a list of input names to generate random names """
+    def __init__(self, inputFile, chainLength, maxLength):
+        self.inputFile = inputFile
+        self.chainLength = chainLength
+        self.maxLength = maxLength
+
 ##### START OF CODE
-""" Allows command line options to be parsed. Called first to in order to let functions use them.  """
+if __name__ == '__main__':
 
-usage = "usage: %prog [Options]"
-version = "%prog Version 1.0.0\n\nCopyright (C) 2012 Alexander Gude - alex.public.account+pathfinderhelper@gmail.com\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Alexander Gude."
-parser = OptionParser(usage=usage,version=version)
-parser.add_option("-c", "--chain-length", action="store", type="int", dest="chainLength", default=2, help="length of fragments [default 2]")
-parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="print status messages to stdout [default false]")
-parser.add_option("-q", "--quite", action="store_false", dest="verbose", default=False, help="do not print status messages to stdout")
+    from optparse import OptionParser # Command line parsing
 
-(options, args) = parser.parse_args()
+    """ Allows command line options to be parsed. Called first to in order to
+    let functions use them.  """
+
+    usage = "usage: %prog [Options]"
+    version = "%prog Version 1.0.0\n\nCopyright (C) 2012 Alexander Gude - alex.public.account+pathfinderhelper@gmail.com\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Alexander Gude."
+    parser = OptionParser(usage=usage,version=version)
+    parser.add_option("-c", "--chain-length", action="store", type="int", dest="chainLength", default=2, help="length of fragments [default 2]")
+    parser.add_option("-m", "--max-length", action="store", type="int", dest="maxLength", default=9, help="maximum length of a name [default 9]")
+    parser.add_option("-f", "--input-file", action="store", type="str", dest="inputFile", default=9, help="maximum length of a name [default 9]")
+    parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="print status messages to stdout [default false]")
+    parser.add_option("-q", "--quite", action="store_false", dest="verbose", default=False, help="do not print status messages to stdout")
+
+    (options, args) = parser.parse_args()
+
+    ng = NameGenerator(options.inputFile, options.chainLength, options.maxLength)
