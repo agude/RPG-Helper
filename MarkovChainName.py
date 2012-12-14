@@ -43,14 +43,15 @@ class MarkovChain:
 
 class NameGenerator:
     """ Use a Markov Chain and a list of input names to generate random names """
-    def __init__(self, inputFile, chainLength, maxLength):
+    def __init__(self, inputFile, chainLength, maxLength, noDupes):
         self.inputFile = inputFile
         self.chainLength = chainLength
         self.maxLength = maxLength
+        self.noDupes = noDupes
         self.mc = MarkovChain()
         self.__loadFile()
         self.__parseData()
-        print(self.mc)
+        #print(self.mc)
 
     def __loadFile(self):
         """ Load names from input file into a set """
@@ -59,46 +60,65 @@ class NameGenerator:
         f.close()
         #Clean up lines
         for i in range(len(self.data)):
-            self.data[i] = self.data[i].strip()
+            self.data[i] = self.data[i].strip().lower()
 
     def __parseData(self):
         """ Run through self.data, parse it, and store the results into
         MarkovChain object """
         for word in self.data:
             while len(word) >= self.chainLength:
-                prefix = word[0:self.chainLength].lower()
+                prefix = word[0:self.chainLength]
                 word = word[self.chainLength:]
                 # Check to see if we're at the end of our word
                 if len(word) == self.chainLength:
-                    suffix = word[0:self.chainLength].lower()
+                    suffix = word[0:self.chainLength]
                     self.mc.add(prefix,suffix)
                     self.mc.add(suffix,'\n')
                     break
                 elif len(word) < self.chainLength:
-                    suffix = word[0:self.chainLength].lower() + '\n'
+                    suffix = word[0:self.chainLength] + '\n'
                     self.mc.add(prefix,suffix)
                     break
                 else:
-                    suffix = word[0:self.chainLength].lower()
+                    suffix = word[0:self.chainLength]
                     self.mc.add(prefix,suffix)
 
     def makeNames(self,nnames):
         """ Generate n names """
-        for i in range(nnames):
+        self.names = []
+        # Loop until we have enough self.names
+        i = 0
+        while len(self.names) < nnames and i <= nnames * 100:
+            i += 1 # Makes it so we don't run forever
             prefix = choice(tuple(self.mc.keys()))
             name = prefix
+            # Walk through the chain for each name
             while True:
                 try:
                     suffix = self.mc[prefix]
                 except KeyError:
-                    print(name.strip().title())
+                    self.__checkName(name)
                     break
                 else:
                     name += suffix
                     prefix = suffix
+                # Name is long enough, or we hit break characters
                 if len(name) >= self.maxLength or prefix == '' or prefix == '\n':
-                    print(name.strip().title())
+                    self.__checkName(name)
                     break
+
+        for name in self.names:
+            print(name.title())
+
+    def __checkName(self,name):
+        """ Check if we should add a name to the final list or not """
+        name = name.lower().strip()
+        if name.title() not in self.names:
+            if self.noDupes and name not in self.data:
+                self.names.append(name.title())
+            elif not self.noDupes:
+                self.names.append(name.title())
+
 
 ##### START OF CODE
 if __name__ == '__main__':
@@ -115,10 +135,11 @@ if __name__ == '__main__':
     parser.add_option("-c", "--chain-length", action="store", type="int", dest="chainLength", default=2, help="length of fragments [default 2]")
     parser.add_option("-m", "--max-length", action="store", type="int", dest="maxLength", default=9, help="maximum length of a name [default 9]")
     parser.add_option("-n", "--n-names", action="store", type="int", dest="nNames", default=5, help="create this many names [default 5]")
+    parser.add_option("-i", "--not-in-input", action="store_true", dest="noDupes", default=False, help="prevent generating names found in the input file [default false]")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="print status messages to stdout [default false]")
     parser.add_option("-q", "--quite", action="store_false", dest="verbose", default=False, help="do not print status messages to stdout")
 
     (options, args) = parser.parse_args()
 
-    ng = NameGenerator(options.inputFile, options.chainLength, options.maxLength)
+    ng = NameGenerator(options.inputFile, options.chainLength, options.maxLength, options.noDupes)
     ng.makeNames(options.nNames)
