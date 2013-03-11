@@ -51,8 +51,6 @@ class Date:
         mod = seasondic[self.season]
         self.date = self.sday + mod
 
-        print(self.date)
-
     def __parseDate(self):
         """ Parse self.date and extract all information """
         # Extract Season and sday
@@ -113,11 +111,17 @@ if __name__ == '__main__':
     usage = "usage: %prog [Options]"
     version = "%prog Version 1.0.0\n\nCopyright (C) 2013 Alexander Gude - alex.public.account+pathfinderhelper@gmail.com\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Alexander Gude."
     parser = OptionParser(usage=usage,version=version)
-    parser.add_option("-f", "--first-name-list", action="store", type="str", dest="fnList", default=None, help="input file containing a list of first names")
-    parser.add_option("-l", "--last-name-list", action="store", type="str", dest="lnList", default=None, help="input file containing a list of last names")
-    parser.add_option("-p", "--hyphen-probability", action="store", type="float", dest="hyphenP", default=".05", help="number in [0.,1.] giving the probability of hyphenating a last name.")
-    parser.add_option("-n", "--n-names", action="store", type="int", dest="nNames", default="10", help="print this number of names")
+    parser.add_option("-d", "--date", action="store", type="str", dest="date", default=None, help="input date in the form '0 <= date <= 360' or 'Season Day'")
+    parser.add_option("-r", "--random", action="store_true", dest="doRandom", default=False, help="generate a random date and ignore any --date input [default False]")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="print status messages to stdout [default false]")
     parser.add_option("-q", "--quite", action="store_false", dest="verbose", default=False, help="do not print status messages to stdout")
 
     (options, args) = parser.parse_args()
+
+    if options.doRandom:
+        from random import randrange
+        d = Date(randrange(1,361,1))
+        print("Random Date:",d)
+    else:
+        d = Date(options.date)
+        print(d)
