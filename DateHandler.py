@@ -78,11 +78,11 @@ class Date:
         elif self.date%5 == 4:
             self.dow = "4th"
         else:
-            self.dow = "The Day of Rest"
+            self.dow = "Day of Rest"
 
     def __repr__(self):
         """ Used for interactive display and printing """
-        if self.dow != "The Day of Rest":
+        if self.dow != "Day of Rest":
             return "It is {0} {1}, which is the {2} day of the year, and the {3} day of the week.".format(
                     self.season,
                     self.sday,
@@ -90,7 +90,7 @@ class Date:
                     self.dow
                     )
         else:
-            return "It is {0} {1}, which is the {2} day of the year, and also {3}.".format(
+            return "It is {0} {1}, which is the {2} day of the year, and also the {3}.".format(
                     self.season,
                     self.sday,
                     self.date,
