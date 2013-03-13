@@ -33,7 +33,7 @@ class Date:
                 self.sday = int(inDate.split(' ')[1])
 
         if self.date:
-            self.__parseDate()
+            self.__parseDate() 
         elif self.season and self.sday:
             self.__parseSDay()
 
@@ -96,9 +96,6 @@ class Date:
                     self.date,
                     self.dow
                     )
-               
-
-    
 
 ##### START OF CODE
 if __name__ == '__main__':
