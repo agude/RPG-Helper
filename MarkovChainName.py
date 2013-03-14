@@ -50,10 +50,11 @@ class MarkovChain:
 
 class NameGenerator:
     """ Use a Markov Chain and a list of input names to generate random names """
-    def __init__(self, inputFile, chainLength, maxLength, noDupes, useStarts):
+    def __init__(self, inputFile, chainLength, maxLength, minLength, noDupes, useStarts):
         self.inputFile = inputFile
         self.chainLength = chainLength
         self.maxLength = maxLength
+        self.minLength = minLength
         self.noDupes = noDupes
         self.useStarts = useStarts
         self.mc = MarkovChain()
@@ -140,6 +141,10 @@ class NameGenerator:
 
     def __checkName(self,name):
         """ Check if we should add a name to the final list or not """
+        # Too short of too long
+        if len(name) < self.minLength or len(name) > self.maxLength:
+            return
+        # Otherwise check
         name = name.lower().strip()
         if name.title() not in self.names:
             if self.noDupes and name not in self.data:
@@ -161,7 +166,8 @@ if __name__ == '__main__':
     parser = OptionParser(usage=usage,version=version)
     parser.add_option("-f", "--input-file", action="store", type="str", dest="inputFile", help="input file containing a list of names, one per line")
     parser.add_option("-c", "--chain-length", action="store", type="int", dest="chainLength", default=2, help="length of fragments [default 2]")
-    parser.add_option("-m", "--max-length", action="store", type="int", dest="maxLength", default=9, help="maximum length of a name [default 9]")
+    parser.add_option("-m", "--max-length", action="store", type="int", dest="maxLength", default=30, help="maximum length of a name [default 30]")
+    parser.add_option("-u", "--min-length", action="store", type="int", dest="minLength", default=2, help="minimum length of a name [default 2]")
     parser.add_option("-n", "--n-names", action="store", type="int", dest="nNames", default=5, help="create this many names [default 5]")
     parser.add_option("-i", "--not-in-input", action="store_true", dest="noDupes", default=False, help="prevent generating names found in the input file [default false]")
     parser.add_option("-s", "--use-starts", action="store_true", dest="useStarts", default=False, help="start names only with combinations that also start names in the input file [default false]")
@@ -170,5 +176,5 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    ng = NameGenerator(options.inputFile, options.chainLength, options.maxLength, options.noDupes, options.useStarts)
+    ng = NameGenerator(options.inputFile, options.chainLength, options.maxLength, options.minLength, options.noDupes, options.useStarts)
     ng.makeNames(options.nNames)
