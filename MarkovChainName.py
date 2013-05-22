@@ -1,21 +1,23 @@
 #!/usr/bin/python3
-#  Copyright (C) 2012  Alexander Gude - alex.public.account+pathfinderhelper@gmail.com
+#  Copyright (C) 2012  Alexander Gude -
+#  alex.public.account+pathfinderhelper@gmail.com
 #
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 3 of the License, or
-#  (at your option) any later version.
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by the Free
+#  Software Foundation; either version 3 of the License, or (at your option)
+#  any later version.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
+#  This program is distributed in the hope that it will be useful, but WITHOUT
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software Foundation,
-#  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#  You should have received a copy of the GNU General Public License along with
+#  this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+#  Place - Suite 330, Boston, MA  02111-1307, USA.
 
 from random import choice
+
 
 class MarkovChain:
     """ Class to store weighted Markov Chain data """
@@ -47,6 +49,7 @@ class MarkovChain:
     def __repr__(self):
         """ Used for interactive display and printing """
         return self.d.__repr__()
+
 
 class NameGenerator:
     """ Use a Markov Chain and a list of input names to generate random names """
@@ -85,35 +88,35 @@ class NameGenerator:
                 if len(word) == self.chainLength:
                     suffix = word[0:self.chainLength]
                     if firstRun:
-                        self.mc.addStart(prefix,suffix)
+                        self.mc.addStart(prefix, suffix)
                     else:
-                        self.mc.add(prefix,suffix)
-                    self.mc.add(suffix,'\n')
+                        self.mc.add(prefix, suffix)
+                    self.mc.add(suffix, '\n')
                     break
                 # Check to see if we are at the end, and need to pad
                 elif len(word) < self.chainLength:
                     suffix = word[0:self.chainLength] + '\n'
                     if firstRun:
-                        self.mc.addStart(prefix,suffix)
+                        self.mc.addStart(prefix, suffix)
                     else:
-                        self.mc.add(prefix,suffix)
+                        self.mc.add(prefix, suffix)
                     break
                 # Otherwise keep running
                 else:
                     suffix = word[0:self.chainLength]
                     if firstRun:
-                        self.mc.addStart(prefix,suffix)
+                        self.mc.addStart(prefix, suffix)
                     else:
-                        self.mc.add(prefix,suffix)
+                        self.mc.add(prefix, suffix)
                 firstRun = False
 
-    def makeNames(self,nnames):
+    def makeNames(self, nnames):
         """ Generate n names """
         self.names = []
         # Loop until we have enough self.names
         i = 0
         while len(self.names) < nnames and i <= nnames * 100:
-            i += 1 # Makes it so we don't run forever
+            i += 1  # Makes it so we don't run forever
             # Generate first part of name, use only the start list in mc class
             # if useStart is set
             if self.useStarts:
@@ -139,7 +142,7 @@ class NameGenerator:
         for name in self.names:
             print(name.title())
 
-    def __checkName(self,name):
+    def __checkName(self, name):
         """ Check if we should add a name to the final list or not """
         # Too short of too long
         if len(name) < self.minLength or len(name) > self.maxLength:
@@ -156,14 +159,14 @@ class NameGenerator:
 ##### START OF CODE
 if __name__ == '__main__':
 
-    from optparse import OptionParser # Command line parsing
+    from optparse import OptionParser  # Command line parsing
 
     """ Allows command line options to be parsed. Called first to in order to
     let functions use them.  """
 
     usage = "usage: %prog [Options]"
     version = "%prog Version 1.1.0\n\nCopyright (C) 2012 Alexander Gude - alex.public.account+pathfinderhelper@gmail.com\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Alexander Gude."
-    parser = OptionParser(usage=usage,version=version)
+    parser = OptionParser(usage=usage, version=version)
     parser.add_option("-f", "--input-file", action="store", type="str", dest="inputFile", help="input file containing a list of names, one per line")
     parser.add_option("-c", "--chain-length", action="store", type="int", dest="chainLength", default=2, help="length of fragments [default 2]")
     parser.add_option("-m", "--max-length", action="store", type="int", dest="maxLength", default=30, help="maximum length of a name [default 30]")
