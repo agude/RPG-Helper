@@ -41,7 +41,7 @@ class MarkovChain:
         list """
         self.s.append(prefix)
         self.add(prefix, suffix)
-            
+
     def keys(self):
         """ Return keys """
         return self.d.keys()

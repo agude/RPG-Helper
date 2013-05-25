@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-#  Copyright (C) 2013  Alexander Gude - alex.public.account+pathfinderhelper@gmail.com
+#  Copyright (C) 2013  Alexander Gude -
+#  alex.public.account+pathfinderhelper@gmail.com
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,6 +17,7 @@
 #  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 from random import choice, random
+
 
 class NameList:
     """ A class to store a list of names """
@@ -38,21 +40,22 @@ class NameList:
     def returnName(self):
         """ Return a random name """
         if self.hyphenP != 0. and random() < self.hyphenP:
-            return "{first}-{second}".format(first=choice(self.data), second=choice(self.data))
+            return "{first}-{second}".format(first=choice(self.data),
+                    second=choice(self.data))
         else:
             return choice(self.data)
 
 ##### START OF CODE
 if __name__ == '__main__':
 
-    from optparse import OptionParser # Command line parsing
+    from optparse import OptionParser  # Command line parsing
 
     """ Allows command line options to be parsed. Called first to in order to
     let functions use them.  """
 
     usage = "usage: %prog [Options]"
     version = "%prog Version 1.0.0\n\nCopyright (C) 2013 Alexander Gude - alex.public.account+pathfinderhelper@gmail.com\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Alexander Gude."
-    parser = OptionParser(usage=usage,version=version)
+    parser = OptionParser(usage=usage, version=version)
     parser.add_option("-f", "--first-name-list", action="store", type="str", dest="fnList", default=None, help="input file containing a list of first names")
     parser.add_option("-l", "--last-name-list", action="store", type="str", dest="lnList", default=None, help="input file containing a list of last names")
     parser.add_option("-p", "--hyphen-probability", action="store", type="float", dest="hyphenP", default=".05", help="number in [0.,1.] giving the probability of hyphenating a last name.")
@@ -68,7 +71,7 @@ if __name__ == '__main__':
         fn = NameList(options.fnList, 0.)
         ln = NameList(options.lnList, options.hyphenP)
         while len(names) < options.nNames:
-            name = "{first} {last}".format(first=fn.returnName() , last=ln.returnName())
+            name = "{first} {last}".format(first=fn.returnName(), last=ln.returnName())
             name = name.title()
             if name not in names:
                 names.append(name)
