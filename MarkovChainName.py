@@ -145,7 +145,7 @@ class NameGenerator:
     def __checkName(self, name):
         """ Check if we should add a name to the final list or not """
         # Too short of too long
-        if len(name) < self.minLength or len(name) > self.maxLength:
+        if len(name.strip()) < self.minLength or len(name.strip()) > self.maxLength:
             return
         # Otherwise check
         name = name.lower().strip()
