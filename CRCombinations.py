@@ -17,7 +17,7 @@
 #  Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
-class conversionTable:
+class ConversionTable:
     """ Class to convert from CR to EXP and back """
     def __init__(self):
         self.EXP = [50, 65, 100, 135, 200, 400, 600, 800, 1200, 1600, 2400,
@@ -51,6 +51,10 @@ class conversionTable:
                 307200: "20", 409600: "21", 614400: "22",
                 819200: "23", 1228800: "24", 1638400: "25"
                 }
+        self.CRtoFloat = {
+                "1/8": 0.125, "1/6": .167, "1/4": 0.25,
+                "1/3": 0.333, "1/2": 0.5
+                }
 
     def isCR(self, CR):
         """ Check if the CR value is legal """
@@ -75,16 +79,66 @@ class conversionTable:
         else:
             raise KeyError
 
+    def toNumber(self, item):
+        """ Convert a CR to an int if exactly an integrer, otherwise to a
+        floating point """
+        if self.isCR(item):
+            try:
+                return int(item)
+            except ValueError:
+                return self.CRtoFloat[item]
+        else:
+            return None
 
-def factorCR(CR, mincr, maxcr, verbose=False, conversionTable=conversionTable):
+
+def factorCR(target, mincr=0.125, maxcr=25, verbose=False, ct=ConversionTable):
     """ Factor CR and display possibilities """
-    CT = conversionTable()
-    print(CR)
-    EXP = CT[CR]
+    CT = ct()
+
+    # Convert mincr, maxcr to numbers, check their sanity
+    mincr = CT.toNumber(mincr)
+    maxcr = CT.toNumber(maxcr)
+    if mincr is None or maxcr is None or mincr > maxcr:
+        return []
+
+    # Detemine what sort of object target is
+    if CT.isCR(target):
+        EXP = CT[target]
+    elif CT.isEXP(target):
+        EXP = target
+    else:
+        return []
+    FINAL = []  # Final Solutions
+    SOLS = []  # Temporary Solutions
     CT.CR.reverse()
+
+    # Run through the various possible factors
     for testCR in CT.CR:
-        textEXP = CT[testCR]
-        print(testCR, textEXP)
+        testCR = CT.toNumber(testCR)
+        if testCR > maxcr or testCR < mincr:  # Stay within bounds
+            continue
+        i = 1
+        while True:
+            testEXP = CT[testCR]
+            newEXP = EXP - (i * testEXP)
+            if newEXP >= 0:
+                SOLS.append((i * [testCR], newEXP))
+                i += 1
+            else:
+                break
+        
+    for (CRs, remainingEXP) in SOLS:
+        # If no remaining EXP left to assign, we're done, otherwise try again
+        if remainingEXP <= 0:
+            FINAL.append((CRs, remainingEXP))
+        else:
+            newMaxCR = CRs[-1]-1  # To avoid duplicates, we set a new max
+            newSOLS = factorCR(remainingEXP, mincr=mincr, maxcr=CRs[-1]-1, verbose=verbose)
+            for (newCRs, newRemainingEXP) in newSOLS:
+                FINAL.append((CRs + newCRs, newRemainingEXP))
+
+    return FINAL
+
 
 ##### START OF CODE
 if __name__ == '__main__':
@@ -106,4 +160,5 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     ## Code to brute force
-    factorCR(6, 1, 4)
+    #print("FINAL: ",factorCR(8,"1/2", 8))
+    print("FINAL: ",factorCR(8,1, 8))
