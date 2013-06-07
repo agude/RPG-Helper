@@ -113,53 +113,58 @@ class NameGenerator:
                         self.mc.add(prefix, suffix)
                 firstRun = False
 
-    def makeNames(self, nnames):
-        """ Generate n names """
-        self.names = self.manager.list()
+    def makeNames(self, nNames):
+        """ Make a list of names by spawning subprocesses to run through the
+        Markov Chain """
+        # Variables to share between threads
         self.namespace = self.manager.Namespace()
+        self.namespace.i = 0
+        self.names = self.manager.list()
 
         # Make processes
         jobs = []
         for i in range(self.nJobs):
-            p = multiprocessing.Process(target=self.__subprocess)
+            p = NameFinder(self.mc, self.namespace, self.names, \
+                    self.maxLength, self.minLength, self.noDupes, \
+                    self.useStarts, self.data, nNames)
             p.daemon = True
             jobs.append(p)
 
         # Keep track of how many tries we've made
-        self.namespace.i = 0
         print(jobs)
 
         # Start processes
         for p in jobs:
             p.start()
 
-        # Loop until we have enough self.names
-        while len(self.names) < nnames and self.namespace.i <= nnames * 100:
-            pass
-
+        # Wait for jobs to finish
         for p in jobs:
-            p.terminate()
+            p.join()
 
         for name in self.names:
             print(name.title())
 
-    def __checkName(self, name):
-        """ Check if we should add a name to the final list or not """
-        # Too short of too long
-        if len(name.strip()) < self.minLength or len(name.strip()) > self.maxLength:
-            return
-        # Otherwise check
-        name = name.lower().strip()
-        if name.title() not in self.names:
-            if self.noDupes and name not in self.data:
-                self.names.append(name.title())
-            elif not self.noDupes:
-                self.names.append(name.title())
 
-    def __subprocess(self):
-        """ A subprocess to find names. """
-        while True:
-            self.namespace.i += 1  # Makes it so we don't run forever
+class NameFinder(multiprocessing.Process):
+    """ Name finding code designed to be parallelized """
+    def __init__(self, markovchain, namespace, namelist, maxLength, minLength, noDupes, useStarts, data, nNames):
+        multiprocessing.Process.__init__(self)
+        self.mc = markovchain
+        self.i = namespace.i
+        self.exit = multiprocessing.Event()
+        self.names = namelist
+        self.maxLength = maxLength
+        self.minLength = minLength
+        self.noDupes = noDupes
+        self.useStarts = useStarts
+        self.data = data
+        self.nNames = nNames
+        self.maxI = self.nNames * 100
+
+    def run(self):
+        """ The function called by multiprocessing to do work """
+        while not self.exit.is_set() and self.i <= self.maxI and len(self.names) <= self.nNames:
+            self.i += 1  # Makes it so we don't run forever
             # Generate first part of name, use only the start list in mc class
             # if useStart is set
             if self.useStarts:
@@ -183,11 +188,27 @@ class NameGenerator:
                     break
         return
 
+    def shutdown(self):
+        print("Shutdown initiated")
+        self.exit.set()
+
+    def __checkName(self, name):
+        """ Check if we should add a name to the final list or not """
+        # Too short of too long
+        if len(name.strip()) < self.minLength or len(name.strip()) > self.maxLength:
+            return
+        # Otherwise check
+        name = name.lower().strip()
+        if name.title() not in self.names:
+            if self.noDupes and name not in self.data:
+                self.names.append(name.title())
+            elif not self.noDupes:
+                self.names.append(name.title())
+
 ##### START OF CODE
 if __name__ == '__main__':
 
     from optparse import OptionParser  # Command line parsing
-    
 
     NJOBS = int(multiprocessing.cpu_count())  # Default job number
 
