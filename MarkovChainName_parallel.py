@@ -53,7 +53,8 @@ class MarkovChain:
 
 
 class NameGenerator:
-    """ Use a Markov Chain and a list of input names to generate random names """
+    """ Use a Markov Chain and a list of input names to generate
+    random names """
     def __init__(self, inputFile, chainLength, maxLength, minLength, noDupes, useStarts, nJobs):
         self.inputFile = inputFile
         self.chainLength = chainLength
@@ -62,12 +63,9 @@ class NameGenerator:
         self.noDupes = noDupes
         self.useStarts = useStarts
         self.nJobs = nJobs
-        self.manager = multiprocessing.Manager()
         self.mc = MarkovChain()
         self.__loadFile()
         self.__parseData()
-        #print(self.mc)
-        #print(self.mc.s)
 
     def __loadFile(self):
         """ Load names from input file into a set """
@@ -77,6 +75,7 @@ class NameGenerator:
         #Clean up lines
         for i in range(len(self.data)):
             self.data[i] = self.data[i].strip().lower()
+        self.data = frozenset(self.data)
 
     def __parseData(self):
         """ Run through self.data, parse it, and store the results into
@@ -117,54 +116,70 @@ class NameGenerator:
         """ Make a list of names by spawning subprocesses to run through the
         Markov Chain """
         # Variables to share between threads
-        self.namespace = self.manager.Namespace()
-        self.namespace.i = 0
-        self.names = self.manager.list()
+        self.nameQueue = multiprocessing.Queue()
 
         # Make processes
         jobs = []
         for i in range(self.nJobs):
-            p = NameFinder(self.mc, self.namespace, self.names, \
-                    self.maxLength, self.minLength, self.noDupes, \
-                    self.useStarts, self.data, nNames)
+            p = NameShover(self.mc, self.maxLength, self.minLength, self.useStarts, self.nameQueue)
             p.daemon = True
             jobs.append(p)
-
-        # Keep track of how many tries we've made
-        print(jobs)
-
-        # Start processes
-        for p in jobs:
             p.start()
 
-        # Wait for jobs to finish
+        # Keep track of how many tries we have made
+        checkedNames = 0
+        self.finalNames = set()
+        runCheck = True
+        while len(self.finalNames) < nNames and checkedNames < nNames * 100:
+            name = self.nameQueue.get(block=True)
+            self.__checkName(name)
+            checkedNames += 1
+            # Shut down the Shovers if we have more names than we could need.
+            # We have a safety factor of nNames (hence 101) because qsize() is
+            # somewhat inaccurate.
+            if runCheck and self.nameQueue.qsize() + checkedNames >= nNames * 101:
+                runCheck = False
+                for p in jobs:
+                    if p.is_alive():
+                        p.shutdown()
+
+        # Shutdown Shovers
         for p in jobs:
-            p.join()
+            if p.is_alive():
+                p.shutdown()
 
-        for name in self.names:
-            print(name.title())
+        # print names
+        for name in self.finalNames:
+            print(name)
+
+    def __checkName(self, name):
+        """ Check if we should add a name to the final list or not """
+        name = name.lower().strip()
+        if self.noDupes and name not in self.data:
+            self.finalNames.add(name.title())
+        elif not self.noDupes:
+            self.finalNames.add(name.title())
 
 
-class NameFinder(multiprocessing.Process):
-    """ Name finding code designed to be parallelized """
-    def __init__(self, markovchain, namespace, namelist, maxLength, minLength, noDupes, useStarts, data, nNames):
+class NameShover(multiprocessing.Process):
+    """ Takes a Markcov Chain and a queue, and shoves names onto the queue
+    until told to stop. """
+    def __init__(self, markovchain, maxLength, minLength, useStarts, resultQueue):
         multiprocessing.Process.__init__(self)
-        self.mc = markovchain
-        self.i = namespace.i
         self.exit = multiprocessing.Event()
-        self.names = namelist
+        self.mc = markovchain
         self.maxLength = maxLength
         self.minLength = minLength
-        self.noDupes = noDupes
         self.useStarts = useStarts
-        self.data = data
-        self.nNames = nNames
-        self.maxI = self.nNames * 100
+        self.resultQueue = resultQueue
+
+    def shutdown(self):
+        """ Stop the process """
+        self.exit.set()
 
     def run(self):
         """ The function called by multiprocessing to do work """
-        while not self.exit.is_set() and self.i <= self.maxI and len(self.names) <= self.nNames:
-            self.i += 1  # Makes it so we don't run forever
+        while not self.exit.is_set():
             # Generate first part of name, use only the start list in mc class
             # if useStart is set
             if self.useStarts:
@@ -186,37 +201,28 @@ class NameFinder(multiprocessing.Process):
                 if len(name) >= self.maxLength or prefix == '' or prefix == '\n':
                     self.__checkName(name)
                     break
-        return
-
-    def shutdown(self):
-        print("Shutdown initiated")
-        self.exit.set()
+        # Done, return exit code
+        return 0
 
     def __checkName(self, name):
-        """ Check if we should add a name to the final list or not """
-        # Too short of too long
-        if len(name.strip()) < self.minLength or len(name.strip()) > self.maxLength:
-            return
-        # Otherwise check
-        name = name.lower().strip()
-        if name.title() not in self.names:
-            if self.noDupes and name not in self.data:
-                self.names.append(name.title())
-            elif not self.noDupes:
-                self.names.append(name.title())
+        """ Check if we should add a name to the queue or not """
+        if self.minLength <= len(name.strip()) <= self.maxLength:
+            name = name.lower().strip()
+            self.resultQueue.put(name.title())
 
 ##### START OF CODE
 if __name__ == '__main__':
 
     from optparse import OptionParser  # Command line parsing
+    from math import floor
 
-    NJOBS = int(multiprocessing.cpu_count())  # Default job number
+    NJOBS = int(floor(multiprocessing.cpu_count() * 1.5))  # Default job number
 
     # Allows command line options to be parsed. Called first to in order to let
     # functions use them.
 
     usage = "usage: %prog [Options]"
-    version = "%prog Version 0.1\n\nCopyright (C) 2013 Alexander Gude - alex.public.account+pathfinderhelper@gmail.com\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Alexander Gude."
+    version = "%prog Version 0.2\n\nCopyright (C) 2013 Alexander Gude - alex.public.account+pathfinderhelper@gmail.com\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Alexander Gude."
     parser = OptionParser(usage=usage, version=version)
     parser.add_option("-f", "--input-file", action="store", type="str", dest="inputFile", help="input file containing a list of names, one per line")
     parser.add_option("-c", "--chain-length", action="store", type="int", dest="chainLength", default=2, help="length of fragments [default 2]")
