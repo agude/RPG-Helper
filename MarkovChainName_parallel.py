@@ -75,7 +75,7 @@ class NameGenerator:
         #Clean up lines
         for i in range(len(self.data)):
             self.data[i] = self.data[i].strip().lower()
-        self.data = frozenset(self.data)
+        self.fsdata = frozenset(self.data)
 
     def __parseData(self):
         """ Run through self.data, parse it, and store the results into
@@ -155,7 +155,7 @@ class NameGenerator:
     def __checkName(self, name):
         """ Check if we should add a name to the final list or not """
         name = name.lower().strip()
-        if self.noDupes and name not in self.data:
+        if self.noDupes and name not in self.fsdata:
             self.finalNames.add(name.title())
         elif not self.noDupes:
             self.finalNames.add(name.title())
