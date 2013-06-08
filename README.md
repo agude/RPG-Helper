@@ -115,14 +115,44 @@ a chain of the following form (using the default chunk size of 2):
 Which each link in the chain having a probability of 1 of moving to the next
 link.
 
-If we used to names, `Alexander` and `Andrew` we would form the following
+If we used to the names `Alexander` and `Andrew` we would form the following
 structure:
 
     "al" -> "ex" -> "an" 0.5|-> "de" -> "r\n"
                          0.5|-> "dr" -> "ew" -> "\n"
 
-The chain no has a branch point at "an" giving a probability of 0.5 of moving
-to each of "de" or "dr".
+The chain now has a branch point at "an" giving a probability of 0.5 of moving
+to each of "de" or "dr". 
+
+
+The results of parsing the input list are stored as a dictionary and a list.
+The dictionary stores the chain, which for the above case looks like:
+
+    {'de': ['r\n'], 'al': ['ex'], 'an': ['dr', 'de'], 'ex': ['an'], 'ew': ['\n'], 'dr': ['ew']}
+
+The list stores a set of starting values, which for the above case would look like:
+
+    ['an', 'al']
+
+The starting values list allows the code to—if the user so desires—only start
+from chunks that also start words in the input list. This behavior is toggled
+with the `-s` flag.
+
+Frequency information is automatically stored by the use of a dictionary. If the input values were 
+`Alexander`, `Andrew`, and `Andrew` (yes, using the same name twice), we would
+generate the following chain:
+
+    "al" -> "ex" -> "an" 1/3|-> "de" -> "r\n"
+                         2/3|-> "dr" -> "ew" -> "\n"
+
+Which has the following dictionary representation:
+
+    {'de': ['r\n'], 'al': ['ex'], 'an': ['de', 'dr', 'dr'], 'ex': ['an'], 'ew': ['\n', '\n'], 'dr': ['ew', 'ew']}
+
+And the following start list:
+
+    ['al', 'an', 'an']
+
 
 ### Usage
 
