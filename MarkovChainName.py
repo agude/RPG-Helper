@@ -74,6 +74,7 @@ class NameGenerator:
         #Clean up lines
         for i in range(len(self.data)):
             self.data[i] = self.data[i].strip().lower()
+        self.data = frozenset(self.data)
 
     def __parseData(self):
         """ Run through self.data, parse it, and store the results into
@@ -112,7 +113,7 @@ class NameGenerator:
 
     def makeNames(self, nnames):
         """ Generate n names """
-        self.names = []
+        self.names = set()
         # Loop until we have enough self.names
         i = 0
         while len(self.names) < nnames and i <= nnames * 100:
@@ -149,11 +150,10 @@ class NameGenerator:
             return
         # Otherwise check
         name = name.lower().strip()
-        if name.title() not in self.names:
-            if self.noDupes and name not in self.data:
-                self.names.append(name.title())
-            elif not self.noDupes:
-                self.names.append(name.title())
+        if self.noDupes and name not in self.data:
+            self.names.add(name.title())
+        elif not self.noDupes:
+            self.names.add(name.title())
 
 
 ##### START OF CODE
