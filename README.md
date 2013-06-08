@@ -1,5 +1,5 @@
-RPG Helper
-=========
+# RPG Helper
+
 
 RPG Helper is a collection of python scripts designed to aid a game master in
 running a pen and paper role playing game.
@@ -43,7 +43,7 @@ This will print the possible combination of ability scores for a 20 point buy.
 ## CRCombinations.py
 
 This script generates a list of all possible combinations of challenge rating
-in Pathfinder such that the combined total is a specificed challenge rating.
+in Pathfinder such that the combined total is a specified challenge rating.
 
 This script is **still under developement** and as such does not work yet.
 
@@ -56,7 +56,7 @@ conversion of dates and the generation of random dates.
 
 If the program is called as follows:
 
-    ./DateHandler.py -h
+    DateHandler.py -h
 
 It will provide the following usage guide:
 
@@ -74,7 +74,7 @@ It will provide the following usage guide:
 
 To generate random dates it can be used as follows:
 
-    ./DateHandler.py --random
+    DateHandler.py --random
 
 Which produces results like:
 
@@ -83,7 +83,7 @@ Which produces results like:
 The script can also be used to convert date formats using the season and day as
 input:
 
-    ./DateHandler.py -d "Summer 85"
+    DateHandler.py -d "Summer 85"
 
 Which returns:
 
@@ -91,10 +91,66 @@ Which returns:
 
 Finally, the script can be used to convert date formats using the day of the year as input:
 
-    ./DateHandler.py -d "354"
+    DateHandler.py -d "354"
 
 Which returns:
 
     It is Winter 84, which is the 354 day of the year, and the 4th day of the week.
 
+## MarkovChainName.py
+
+This script parses an list of input words, and generates a new set of words
+using a [Markov chain Monte Carlo](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo).
+It is useful for generating a list names that look and sound similar to a set
+of input names.
+
+### Algorithm
+
+Input words are broken down into *chunks* of characters, which are then used to
+form a Markov chain. For example, the input word `Alexander` would be mapped to
+a chain of the following form (using the default chunk size of 2):
+
+    "al" -> "ex" -> "an" -> "de" -> "r\n"
+
+Which each link in the chain having a probability of 1 of moving to the next
+link.
+
+If we used to names, `Alexander` and `Andrew` we would form the following
+structure:
+
+    "al" -> "ex" -> "an" 0.5|-> "de" -> "r\n"
+                         0.5|-> "dr" -> "ew" -> "\n"
+
+The chain no has a branch point at "an" giving a probability of 0.5 of moving
+to each of "de" or "dr".
+
+### Usage
+
+If the program is called as follows:
+
+    MarkovChainName.py -h
+
+It will provide the following usage guide:
+
+    Usage: MarkovChainName.py [Options]
+
+    Options:
+      --version             show program's version number and exit
+      -h, --help            show this help message and exit
+      -f INPUTFILE, --input-file=INPUTFILE
+                            input file containing a list of names, one per line
+      -c CHAINLENGTH, --chain-length=CHAINLENGTH
+                            length of fragments [default 2]
+      -m MAXLENGTH, --max-length=MAXLENGTH
+                            maximum length of a name [default 30]
+      -u MINLENGTH, --min-length=MINLENGTH
+                            minimum length of a name [default 2]
+      -n NNAMES, --n-names=NNAMES
+                            create this many names [default 5]
+      -i, --not-in-input    prevent generating names found in the input file
+                            [default false]
+      -s, --use-starts      start names only with combinations that also start
+                            names in the input file [default false]
+      -v, --verbose         print status messages to stdout [default false]
+      -q, --quite           do not print status messages to stdout
 
