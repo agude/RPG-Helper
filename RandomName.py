@@ -58,8 +58,8 @@ if __name__ == '__main__':
     parser = OptionParser(usage=usage, version=version)
     parser.add_option("-f", "--first-name-list", action="store", type="str", dest="fnList", default=None, help="input file containing a list of first names")
     parser.add_option("-l", "--last-name-list", action="store", type="str", dest="lnList", default=None, help="input file containing a list of last names")
-    parser.add_option("-p", "--hyphen-probability", action="store", type="float", dest="hyphenP", default=".05", help="number in [0.,1.] giving the probability of hyphenating a last name.")
-    parser.add_option("-n", "--n-names", action="store", type="int", dest="nNames", default="10", help="print this number of names")
+    parser.add_option("-p", "--hyphen-probability", action="store", type="float", dest="hyphenP", default=".05", help="number in [0.,1.] giving the probability of hyphenating a last name [default 0.05]")
+    parser.add_option("-n", "--n-names", action="store", type="int", dest="nNames", default="5", help="print this number of names [default 5]")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="print status messages to stdout [default false]")
     parser.add_option("-q", "--quite", action="store_false", dest="verbose", default=False, help="do not print status messages to stdout")
 
