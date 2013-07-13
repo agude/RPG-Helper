@@ -232,7 +232,7 @@ if __name__ == '__main__':
     parser.add_option("-m", "--max-length", action="store", type="int", dest="maxLength", default=30, help="maximum length of a name [default 30]")
     parser.add_option("-u", "--min-length", action="store", type="int", dest="minLength", default=2, help="minimum length of a name [default 2]")
     parser.add_option("-n", "--n-names", action="store", type="int", dest="nNames", default=5, help="create this many names [default 5]")
-    parser.add_option("-j", "--jobs", action="store", type="int", dest="nJobs", default=NJOBS, help="use this many subprocess [default cpu_count*1.5]")
+    parser.add_option("-j", "--jobs", action="store", type="int", dest="nJobs", default=NJOBS, help="use this many subprocess [default cpu_count*1.5 = %i]" % NJOBS)
     parser.add_option("-i", "--not-in-input", action="store_true", dest="noDupes", default=False, help="prevent generating names found in the input file [default false]")
     parser.add_option("-s", "--use-starts", action="store_true", dest="useStarts", default=False, help="start names only with combinations that also start names in the input file [default false]")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="print status messages to stdout [default false]")
